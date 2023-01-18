@@ -1,7 +1,7 @@
 {
   "name": "mydevil-deploy",
-  "version": "1.0.0",
-  "description": "MyDevil.net hosting website deployment script program",
+  "version": "v1.0.0",
+  "description": "MyDevil.net hosting website deployment script program.",
   "repository": "https://github.com/piretek/mydevil-deploy",
   "author": "Piotr Czarnecki <piretek@piretek.pro>",
   "license": "MIT",
@@ -14,10 +14,13 @@
     "start": "npx tsc -w "
   },
   "dependencies": {
-    "@types/node": "^18.11.18",
-    "typescript": "^4.9.4"
+    "js-yaml": "^4.1.0",
+    "typescript": "^4.9.4",
+    "validator.ts": "^0.2.2"
   },
   "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@types/js-yaml": "^4.0.5",
     "commander": "^10.0.0"
   }
 }
