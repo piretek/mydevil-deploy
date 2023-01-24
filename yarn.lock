@@ -92,6 +92,11 @@ nan@^2.15.0, nan@^2.16.0:
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.17.0.tgz#c0150a2368a182f033e9aa5195ec76ea41a199cb"
   integrity sha512-2ZTgtl0nJsO0KQCjEpxcIr5D+Yv90plTitZt9JBfQvVJDS5seMl3FOvsh3+9CoYWXf/1l5OaZzzF6nDm4cagaQ==
 
+rsyncwrapper@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/rsyncwrapper/-/rsyncwrapper-3.0.1.tgz#018856c2403829e8947715096e69326a4383ba76"
+  integrity sha512-fkGmeEJRbKveT/6bBqTVzzHS1wtbGQwL6qnwT/+1AtMAsEV5dX1fSAiOJVZrDOnVsOr2lFl8ga1MZLoHekV3yg==
+
 safer-buffer@~2.1.0:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"

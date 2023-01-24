@@ -1,8 +1,8 @@
-import { IsEnum, IsNotEmpty, IsOptional, Matches } from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional, Matches, ValidateNested } from "class-validator";
 import { WebsiteType } from "./enums/website-type.enum";
 import { DnsConfig } from "./dns.config";
-import { WithKey } from "simple-ssh";
-import { SSHAuthKeyConfig, SSHAuthPasswordConfig } from "./ssh.config";
+import { SSHAuthKeyConfig } from "./ssh.config";
+import { DeploymentFilesConfig } from "./deployment-files.config";
 
 export abstract class DeploymentConfig {
     @Matches(/((?:[a-z0-9-]+\.)*)([a-z0-9-]+\.[a-z]+)($|\s|:\d{1,5})/)
@@ -12,10 +12,14 @@ export abstract class DeploymentConfig {
     @IsEnum(WebsiteType)
     @IsNotEmpty()
     public type: WebsiteType;
+    @ValidateNested()
+    public files: string[] | DeploymentFilesConfig;
 
     @IsOptional()
     public ssl: boolean;
     @IsOptional()
+    @ValidateNested()
     public dns: DnsConfig;
-    public ssh: SSHAuthKeyConfig | SSHAuthPasswordConfig;
+    @ValidateNested()
+    public ssh: SSHAuthKeyConfig;
 }

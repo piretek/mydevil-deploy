@@ -1,5 +1,4 @@
-import { PromisedSSH } from "../helpers/promised-ssh";
-import { SSHConfig } from "simple-ssh";
+import { PromisedSSH } from "./promised-ssh";
 import { DevilDnsRecord } from "../models/devil-dns-record";
 import { DevilDnsZone } from "../models/devil-dns-zone";
 import { DeploymentConfig } from "../models/config/deployment.config";
@@ -10,12 +9,14 @@ import { DevilDnsRecordsListResponse } from "../models/devil/responses/devil-dns
 import { DevilDnsZonesListResponse } from "../models/devil/responses/devil-dns-zones-list-response";
 import { DevilWebsitesListResponse } from "../models/devil/responses/devil-websites-list-response";
 import { DevilWebsite } from "../models/devil-website";
+import { SSHAuthKeyConfig } from "../models/config/ssh.config";
+import { DeploymentFilesConfig } from "../models/config/deployment-files.config";
 
 export class Devil {
     public static instance: Record<string, Devil> = {};
     private ssh: PromisedSSH;
 
-    public static getInstance(deploymentName: string, sshConfig: SSHConfig): Devil {
+    public static getInstance(deploymentName: string, sshConfig: SSHAuthKeyConfig): Devil {
         if (!(deploymentName in Devil.instance)) {
             Devil.instance[deploymentName] = new Devil(sshConfig);
         }
@@ -23,7 +24,7 @@ export class Devil {
         return Devil.instance[deploymentName];
     }
 
-    protected constructor(sshConfig: SSHConfig) {
+    protected constructor(sshConfig: SSHAuthKeyConfig) {
         this.ssh = new PromisedSSH(sshConfig);
     }
 
@@ -86,5 +87,17 @@ export class Devil {
         const command = this.prepareCommand(['dns','add', ...args]);
 
         await this.ssh.cmd(command);
+    }
+
+    public async syncFiles(deployment: DeploymentConfig): Promise<void> {
+        const files: DeploymentFilesConfig = deployment.files as DeploymentFilesConfig;
+
+        await this.ssh.rsync({
+            exclude: files.exclude,
+            include: files.include,
+            src: '/c/Users/piotr.czarnecki2/Desktop/Projekty/test',
+            // src: process.cwd(),
+            dest: `${deployment.ssh.user}@${deployment.ssh.host}:${deployment.ssh.dir}`,
+        }).catch(({ error }) => { throw error; })
     }
 }

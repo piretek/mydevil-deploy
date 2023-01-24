@@ -1,8 +1,7 @@
+import tldts from 'tldts';
 import { Command } from "../models/command";
 import { ConfigUtil } from "../helpers/config-util";
-import { validate } from "class-validator";
 import { Devil } from "../helpers/devil";
-import tldts from 'tldts';
 import { cliLoading } from "../helpers/cli-loading";
 
 export class CreateCommand implements Command {
@@ -10,8 +9,6 @@ export class CreateCommand implements Command {
 
         const loading = cliLoading('Creating deployments...');
         const config = await ConfigUtil.getConfigFromFile(configAction);
-
-        await validate(config);
 
         for (const deploymentName in config.deployments) {
             loading.info(deploymentName);
@@ -56,6 +53,8 @@ export class CreateCommand implements Command {
                 loading.succeed(`Successfully added ${deployment.domain} ${deployment.dns.type} dns record.`);
             }
 
+            loading.loadText(`Syncing ${deployment.domain} website with local changes...`);
+            await devil.syncFiles(deployment);
             loading.stop();
         }
     }
