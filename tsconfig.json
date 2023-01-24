@@ -7,6 +7,9 @@
     "module": "commonjs",
     "sourceMap": true,
     "esModuleInterop": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "allowJs": true,
+    "strictPropertyInitialization": false
   }
 }

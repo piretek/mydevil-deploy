@@ -5,7 +5,7 @@ const  { ConfigFileNotFoundException } = require("../models/exceptions/config-fi
 const { ConfigFileIncorrectFormatException } = require("../models/exceptions/config-file-incorrect-format.exception");
 
 export class YmlParser {
-    public static parseYmlFile(ymlFilePath: string): object | null {
+    public static async parseYmlFile(ymlFilePath: string): Promise<object | undefined> {
         try {
             const ymlFileContent = fs.readFileSync(ymlFilePath, 'utf8');
 
@@ -19,7 +19,5 @@ export class YmlParser {
                 throw new ConfigFileIncorrectFormatException();
             }
         }
-
-        return null;
     };
 }
