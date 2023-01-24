@@ -3,21 +3,25 @@ import { ConfigUtil } from "../helpers/config-util";
 import { validate } from "class-validator";
 import { Devil } from "../helpers/devil";
 import tldts from 'tldts';
+import { cliLoading } from "../helpers/cli-loading";
 
 export class CreateCommand implements Command {
     public static async execute(configAction: string): Promise<void> {
-        console.log('Creating deployments using config file', configAction);
+
+        const loading = cliLoading('Creating deployments...');
         const config = await ConfigUtil.getConfigFromFile(configAction);
 
         await validate(config);
 
         for (const deploymentName in config.deployments) {
-            console.log('Creating deployment', deploymentName);
+            loading.text = 'Creating deployment ' + deploymentName;
+
             const deployment = config.deployments[deploymentName];
 
             const devil = await Devil.getInstance(deploymentName, deployment.ssh);
 
             const websites = await devil.getWebsitesList().catch(() => {
+                loading.stop();
                 throw new Error('Error reading websites list');
             });
 
@@ -26,6 +30,7 @@ export class CreateCommand implements Command {
             }
 
             const dnsZones = await devil.getDnsList().catch(() => {
+                loading.stop();
                 throw new Error('Error reading dns zones list');
             });
             const subdomainZone = dnsZones.find(({ name }) => name === deployment.domain);
@@ -33,10 +38,12 @@ export class CreateCommand implements Command {
 
             const targetDomainZone = subdomainZone?.name || fqdnDomainZone?.name;
             if (!targetDomainZone) {
+                loading.stop();
                 throw new Error(`Could not find DNS zone for domain ${deployment.domain}`);
             }
 
             const dnsRecords = await devil.getDnsRecordList(targetDomainZone).catch(() => {
+                loading.stop();
                 throw new Error('Error reading dns records list');
             });
 
@@ -44,7 +51,7 @@ export class CreateCommand implements Command {
                 await devil.addDnsRecord(deployment, targetDomainZone);
             }
 
-
+            loading.stop();
         }
     }
 }
