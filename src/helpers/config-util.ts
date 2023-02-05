@@ -7,7 +7,7 @@ import { DnsRecord } from "../models/config/enums/dns-record.enum";
 import tldts from "tldts";
 import { DnsConfig } from "../models/config/dns.config";
 import { SSHAuthKeyConfig } from "../models/config/ssh.config";
-import { DeploymentFilesConfig } from "../models/config/deployment-files.config";
+import { DeploymentSyncConfig } from "../models/config/deployment-sync.config";
 
 export class ConfigUtil {
     public static async getConfigFromFile(configPath: string): Promise<ConfigFile> {
@@ -41,21 +41,33 @@ export class ConfigUtil {
                 content: config.deployments[deploymentName]?.dns?.content || defaultConfig.content,
             }
 
-            if (Array.isArray(config.deployments[deploymentName].files)) {
-                config.deployments[deploymentName].files = {
-                    include: config.deployments[deploymentName].files as string[] ?? ['./*'],
-                    exclude: []
+            if (Array.isArray(config.deployments[deploymentName].sync)) {
+                const files = config.deployments[deploymentName].sync as string[];
+
+                config.deployments[deploymentName].sync = {
+                    include: files ?? ['./*'],
+                    exclude: [],
+                    // FIXME: probably will need fixup in case of complicated directory structure
+                    dir: process.cwd(),
+                    commands: { before: [], after: [] }
                 }
             }
             else {
-                config.deployments[deploymentName].files = {
-                    include: !(config.deployments[deploymentName].files as DeploymentFilesConfig).include
+                const filesConfig = config.deployments[deploymentName].sync as DeploymentSyncConfig;
+
+                config.deployments[deploymentName].sync = {
+                    include: !filesConfig.include
                         ? ['./*']
-                        : (config.deployments[deploymentName].files as DeploymentFilesConfig).include,
-                    exclude: !(config.deployments[deploymentName].files as DeploymentFilesConfig).exclude
+                        : filesConfig.include,
+                    exclude: !filesConfig.exclude
                         ? []
-                        : (config.deployments[deploymentName].files as DeploymentFilesConfig).exclude,
-                } as DeploymentFilesConfig;
+                        : filesConfig.exclude,
+                    dir: (filesConfig.dir ?? process.cwd()),
+                    commands: {
+                        before: filesConfig?.commands?.before ?? [],
+                        after: filesConfig?.commands?.after ?? []
+                    }
+                } as DeploymentSyncConfig;
             }
         }
 

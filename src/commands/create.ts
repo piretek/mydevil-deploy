@@ -3,12 +3,15 @@ import { Command } from "../models/command";
 import { ConfigUtil } from "../helpers/config-util";
 import { Devil } from "../helpers/devil";
 import { cliLoading } from "../helpers/cli-loading";
+import { DeploymentSyncConfig } from "../models/config/deployment-sync.config";
+import isValidDomain from "is-valid-domain";
+import yaml from 'js-yaml';
 
 export class CreateCommand implements Command {
-    public static async execute(configAction: string): Promise<void> {
+    public static async execute(configFile: string): Promise<void> {
 
         const loading = cliLoading('Creating deployments...');
-        const config = await ConfigUtil.getConfigFromFile(configAction);
+        const config = await ConfigUtil.getConfigFromFile(configFile);
 
         for (const deploymentName in config.deployments) {
             loading.info(deploymentName);
@@ -53,9 +56,39 @@ export class CreateCommand implements Command {
                 loading.succeed(`Successfully added ${deployment.domain} ${deployment.dns.type} dns record.`);
             }
 
+            const sync: DeploymentSyncConfig = deployment?.sync as DeploymentSyncConfig;
+            const { commands: { before, after }} = sync;
+
+            loading.loadText('Executing before sync commands...');
+            for (const command of before) {
+                loading.loadText('Executing command: ' + command);
+                await devil.runCommand(command);
+            }
+
             loading.loadText(`Syncing ${deployment.domain} website with local changes...`);
             await devil.syncFiles(deployment);
+            loading.succeed('Successfully synced website with local changes.');
+
+            loading.loadText('Executing after sync commands...');
+            for (const command of after) {
+                loading.loadText('Executing command: ' + command);
+                await devil.runCommand(command);
+            }
+
             loading.stop();
+
+            console.log('\nDeployment created successfully! 🥳🥳')
+            console.log('URL to access your website: http://' + deployment.domain);
+            console.log('To remove this deployment, run: mydevil-deploy remove <deployment domain>');
+
+            const deploymentConfigToSave = { ...deployment, ssh: { baseDir: deployment.ssh.baseDir } };
+
+            const lastFolder: string = deployment?.ssh?.baseDir.split('/').filter((f) => f.trim().length > 0).pop() ?? '';
+            const saveCommand = `echo "${yaml.dump(deploymentConfigToSave)}" > .mydevil-deployment`;
+            await devil.runCommand(!isValidDomain(lastFolder)
+                ? `cd ${deployment?.ssh?.baseDir}/.. && ${saveCommand}`
+                : saveCommand
+            );
         }
     }
 }

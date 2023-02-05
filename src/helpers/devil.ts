@@ -10,7 +10,7 @@ import { DevilDnsZonesListResponse } from "../models/devil/responses/devil-dns-z
 import { DevilWebsitesListResponse } from "../models/devil/responses/devil-websites-list-response";
 import { DevilWebsite } from "../models/devil-website";
 import { SSHAuthKeyConfig } from "../models/config/ssh.config";
-import { DeploymentFilesConfig } from "../models/config/deployment-files.config";
+import { DeploymentSyncConfig } from "../models/config/deployment-sync.config";
 
 export class Devil {
     public static instance: Record<string, Devil> = {};
@@ -43,8 +43,12 @@ export class Devil {
 
     private async getCmdResponse<Response extends DevilBasicResponse>(args: string[]): Promise<Response> {
         return JSON.parse(
-            await this.ssh.cmd(this.prepareCommand(args))
+            await this.runCommand(this.prepareCommand(args))
         );
+    }
+
+    public async runCommand(command: string): Promise<string> {
+        return await this.ssh.cmd(command);
     }
 
     public async getDnsList(): Promise<DevilDnsZone[]> {
@@ -90,14 +94,12 @@ export class Devil {
     }
 
     public async syncFiles(deployment: DeploymentConfig): Promise<void> {
-        const files: DeploymentFilesConfig = deployment.files as DeploymentFilesConfig;
-
+        const files: DeploymentSyncConfig = deployment.sync as DeploymentSyncConfig;
         await this.ssh.rsync({
             exclude: files.exclude,
             include: files.include,
-            src: '/c/Users/piotr.czarnecki2/Desktop/Projekty/test',
-            // src: process.cwd(),
-            dest: `${deployment.ssh.user}@${deployment.ssh.host}:${deployment.ssh.dir}`,
-        }).catch(({ error }) => { throw error; })
+            src: (files.dir ?? process.cwd()) + '/',
+            dest: `${deployment.ssh.user}@${deployment.ssh.host}:${deployment.ssh.baseDir}`,
+        }).catch(({ error }) => { throw error; });
     }
 }

@@ -2,7 +2,7 @@ import { IsEnum, IsNotEmpty, IsOptional, Matches, ValidateNested } from "class-v
 import { WebsiteType } from "./enums/website-type.enum";
 import { DnsConfig } from "./dns.config";
 import { SSHAuthKeyConfig } from "./ssh.config";
-import { DeploymentFilesConfig } from "./deployment-files.config";
+import { DeploymentSyncConfig } from "./deployment-sync.config";
 
 export abstract class DeploymentConfig {
     @Matches(/((?:[a-z0-9-]+\.)*)([a-z0-9-]+\.[a-z]+)($|\s|:\d{1,5})/)
@@ -13,7 +13,7 @@ export abstract class DeploymentConfig {
     @IsNotEmpty()
     public type: WebsiteType;
     @ValidateNested()
-    public files: string[] | DeploymentFilesConfig;
+    public sync: string[] | DeploymentSyncConfig;
 
     @IsOptional()
     public ssl: boolean;

@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 import { CreateCommand } from "./commands/create";
 import { cliLoading } from "./helpers/cli-loading";
+import { RemoveCommand } from "./commands/remove";
 
 const commander = require('commander');
 const version = require('../package.json').version;
@@ -25,6 +26,13 @@ try {
         .description('Creates deployment for the website.')
         .argument('<config file>', 'Path to the .yml configuration file.')
         .action(CreateCommand.execute);
+
+    program
+        .command('remove')
+        .description('Removes deployment of the website.')
+        .argument('<config file>', 'Path to the .yml configuration file.')
+        .argument('<deployment domain>', 'Deployment domain name.')
+        .action(RemoveCommand.execute);
 
     program.parse();
 

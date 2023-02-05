@@ -7,7 +7,7 @@ export class SSHConfig implements BaseConfig {
     public host: string;
     public user: string;
     public port: number;
-    public dir: string;
+    public baseDir: string;
 }
 
 export class SSHAuthKeyConfig extends SSHConfig implements SSHConfigWithKeyI {

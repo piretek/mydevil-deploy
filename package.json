@@ -16,6 +16,7 @@
   "dependencies": {
     "class-validator": "^0.14.0",
     "commander": "^10.0.0",
+    "is-valid-domain": "^0.1.6",
     "js-yaml": "^4.1.0",
     "loading-cli": "^1.1.0",
     "rsyncwrapper": "^3.0.1",
